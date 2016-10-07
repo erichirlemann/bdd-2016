@@ -34,8 +34,8 @@ public class ImageAverage {
             IplImage temp = blankCopy(image1);
             IplImage mean = blankCopy(image1);
 
-            cvAddWeighted(image1, 1/3, image2, 1/3, 0.0, temp);
-            cvAddWeighted(temp, 2/3, image3, 1/3, 0.0, mean);
+            cvAddWeighted(image1, 1.0/3.0, image2, 1.0/3.0, 0.0, temp);
+            cvAddWeighted(temp, 2.0/3.0, image3, 1.0/3.0, 0.0, mean);
 
             cvReleaseImage(image1);
             cvReleaseImage(image2);
