@@ -17,7 +17,7 @@ import static org.bytedeco.javacpp.opencv_imgcodecs.cvSaveImage;
 
 public class ImageLoader {
 
-  private static final int FILES_GROUP = 10;
+  private static final int FILES_GROUP = 20;
 
   private final BeeDetector beeDetector = new BeeDetector();
 
