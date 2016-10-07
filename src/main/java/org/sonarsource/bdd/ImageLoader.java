@@ -9,13 +9,9 @@ import org.apache.commons.io.FileUtils;
 import org.bytedeco.javacpp.opencv_core.CvRect;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
-import static org.bytedeco.javacpp.opencv_core.cvCopy;
-import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
-import static org.bytedeco.javacpp.opencv_core.cvGetSize;
 import static org.bytedeco.javacpp.opencv_core.cvReleaseImage;
 import static org.bytedeco.javacpp.opencv_core.cvSetImageROI;
 import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
-import static org.bytedeco.javacpp.opencv_imgcodecs.cvSaveImage;
 
 public class ImageLoader {
 
@@ -33,12 +29,13 @@ public class ImageLoader {
   }
 
   public void load(File inputDir) throws IOException {
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(inputDir.toPath())) {
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(inputDir.toPath(), "*.JPG")) {
       IplImage ref = null;
       for (Path entry : stream) {
         if (ref == null) {
           ref = cvLoadImage(entry.toFile().getAbsolutePath());
           crop(ref);
+          save(ref, entry.toFile().getName() + "-cropped.jpg");
           continue;
         }
         int nb = processImage(ref, entry.toFile());
@@ -49,26 +46,25 @@ public class ImageLoader {
 
   private int processImage(IplImage ref, File file) {
     IplImage image = cvLoadImage(file.getAbsolutePath());
-    crop(image);
 
-    IplImage cropped = cvCreateImage(cvGetSize(image), image.depth(), image.nChannels());
-    cvCopy(image, cropped);
+    IplImage cropped = crop(image);
+    save(cropped, file.getName() + "-cropped.jpg");
 
-    int nb = beeDetector.detect(ref, image, file.getName());
+    int nb = beeDetector.detect(ref, cropped, file.getName());
 
     cvReleaseImage(image);
     cvReleaseImage(cropped);
-
     return nb;
   }
 
-  private void crop(IplImage image) {
-    CvRect r = new CvRect(80, 80, 2000, 2000);
+  private IplImage crop(IplImage image) {
+    CvRect r = new CvRect(1600, 1500, 2000, 1000);
     cvSetImageROI(image, r);
+    return image;
   }
 
   private void save(IplImage frame, String name) {
     File outputFile = new File(outputFolder, name);
-    cvSaveImage(outputFile.getAbsolutePath(), frame);
+    //cvSaveImage(outputFile.getAbsolutePath(), frame);
   }
 }

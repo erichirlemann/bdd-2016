@@ -49,15 +49,15 @@ public class BeeDetector {
     // do some threshold for wipe away useless details
     cvThreshold(diff, diff, 100, 255, CV_THRESH_BINARY);
     cvSmooth(diff, diff, CV_BLUR, 9, 9, 2, 2);
-    save(diff, fileName + "-diff");
+    //save(diff, fileName + "-diff");
 
     IplImage mask = cvCreateImage(cvGetSize(diff), IPL_DEPTH_8U, 1);
     cvCvtColor(diff, mask, CV_RGB2GRAY);
-    save(mask, fileName + "-mask");
+    //save(mask, fileName + "-mask");
 
     IplImage copyAnd = copyEmpty(image);
     cvAnd(image, image, copyAnd, mask);
-    save(copyAnd, fileName + "-and");
+    //save(copyAnd, fileName + "-and");
 
     IplImage result = cvCreateImage(cvGetSize(ref), IPL_DEPTH_8U, 1);
     cvInRangeS(copyAnd, min, max, result);
@@ -100,7 +100,9 @@ public class BeeDetector {
       }
       contour = contour.h_next();
     }
-    save(contourImage, fileName + "-contour");
+    if (nbCont > 0) {
+      save(contourImage, fileName + "-contour");
+    }
     return nbCont;
   }
 
