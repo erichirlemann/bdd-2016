@@ -7,14 +7,7 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.FrameGrabber;
 
 import static org.bytedeco.javacpp.helper.opencv_imgproc.cvFindContours;
-import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
-import static org.bytedeco.javacpp.opencv_core.cvAbsDiff;
-import static org.bytedeco.javacpp.opencv_core.cvAnd;
-import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
-import static org.bytedeco.javacpp.opencv_core.cvGetSize;
-import static org.bytedeco.javacpp.opencv_core.cvInRangeS;
-import static org.bytedeco.javacpp.opencv_core.cvReleaseImage;
-import static org.bytedeco.javacpp.opencv_core.cvScalar;
+import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
 import static org.bytedeco.javacpp.opencv_imgcodecs.cvSaveImage;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BLUR;
@@ -32,8 +25,8 @@ public class ImageMotionDetection {
   // static opencv_core.CvScalar min = cvScalar(181, 137, 28, 0);// BGR-A
   // static opencv_core.CvScalar max = cvScalar(228, 175, 59, 0);// BGR-A
 
-  static opencv_core.CvScalar min = cvScalar(0x09, 0x63, 0x90, 0);// BGR-A
-  static opencv_core.CvScalar max = cvScalar(0x2c, 0xB3, 0xe4, 0);// BGR-A
+  static opencv_core.CvScalar min = cvScalar(0x0A, 0x64, 0x93, 0);// BGR-A
+  static opencv_core.CvScalar max = cvScalar(0x30, 0xB8, 0xe3, 0);// BGR-A
 
   public void execute() throws FrameGrabber.Exception {
     File filePath = new File(getClass().getClassLoader().getResource("samples").getFile());
@@ -44,8 +37,10 @@ public class ImageMotionDetection {
       throw new IllegalArgumentException("File not found");
     }
 
+
     IplImage image1 = cvLoadImage(file1.getAbsolutePath());
     IplImage image2 = cvLoadImage(file2.getAbsolutePath());
+    IplImage image3 = cvLoadImage(file3.getAbsolutePath());
 
     IplImage diff = diff(image1, image2);
     // do some threshold for wipe away useless details
@@ -72,6 +67,13 @@ public class ImageMotionDetection {
     cvReleaseImage(copyAnd);
     cvReleaseImage(image1);
     cvReleaseImage(image2);
+
+
+    File[] files = {file1, file2, file3};
+    IplImage average = average(files);
+    save(average, "average");
+    cvReleaseImage(image2);
+
   }
 
   private IplImage diff(IplImage frame, IplImage frame2) {
@@ -118,5 +120,29 @@ public class ImageMotionDetection {
   private static IplImage copy(IplImage frame) {
     // return frame.clone();
     return IplImage.create(cvGetSize(frame), frame.depth(), frame.nChannels());
+  }
+
+  public static IplImage average(File[] files) {
+    if (files.length == 0) {
+        throw new IllegalArgumentException("can't compute average image of a zero sized set");
+    } else {
+
+      IplImage image = cvLoadImage(files[0].getAbsolutePath());
+      IplImage average = copy(image);
+      cvReleaseImage(image);
+
+      for (int i = 1; i < files.length; i++) {
+        File file = files[i];
+        image = cvLoadImage(file.getAbsolutePath());
+
+        IplImage nextValue = copy(average);
+        cvAddWeighted(average, i / (i + 1.0), image, 1.0 / (i + 1.0), 0.0, nextValue);
+
+        cvReleaseImage(average);
+        average = nextValue;
+      }
+
+      return average;
+    }
   }
 }
