@@ -9,7 +9,7 @@ public class ImageLoaderTest {
 
   @Test
   public void test() throws Exception {
-    //File filePath = new File(getClass().getClassLoader().getResource("samples").getFile());
-    underTest.load(new File("/Users/julienlancelot/Downloads/BDD"));
+    File filePath = new File(getClass().getClassLoader().getResource("samples2").getFile());
+    underTest.load(filePath);
   }
 }
