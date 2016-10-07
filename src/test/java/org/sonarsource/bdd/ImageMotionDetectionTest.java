@@ -9,6 +9,5 @@ public class ImageMotionDetectionTest {
   @Test
   public void test() throws Exception {
     underTest.execute();
-
   }
 }

@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 
 public class ImageSamples {
 
-  public static final String DIR = "/home/alban/dev/github/julienlancelot/bdd-2016/src/test/resources/samples/";
+  public static final String DIR = "src/test/resources/samples/";
 
   public static final File IMG_FILE1 = new File(DIR + "DSC_0218-min.JPG");
   public static final File IMG_FILE2 = new File(DIR + "DSC_0219-min.JPG");

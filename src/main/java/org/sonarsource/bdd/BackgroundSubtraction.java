@@ -46,7 +46,7 @@ public class BackgroundSubtraction {
     cvReleaseImage(iplImage);
   }
 
-  public void imageMotionDetector(){
+  public void imageMotionDetector() {
 
   }
 
@@ -103,23 +103,23 @@ public class BackgroundSubtraction {
               CvPoint2D32f center = box.center();
               CvSize2D32f size = box.size();
               /*
-               * for (int i = 0; i < sa.length; i++) {
-               * if ((Math.abs(center.x - (sa[i].offsetX + sa[i].width / 2))) < ((size.width / 2) + (sa[i].width / 2)) &&
-               * (Math.abs(center.y - (sa[i].offsetY + sa[i].height / 2))) < ((size.height / 2) + (sa[i].height / 2))) {
-               * if (!alarmedZones.containsKey(i)) {
-               * alarmedZones.put(i, true);
-               * activeAlarms.put(i, 1);
-               * } else {
-               * activeAlarms.remove(i);
-               * activeAlarms.put(i, 1);
-               * }
-               * System.out.println("Motion Detected in the area no: " + i +
-               * " Located at points: (" + sa[i].x + ", " + sa[i].y+ ") -"
-               * + " (" + (sa[i].x +sa[i].width) + ", "
-               * + (sa[i].y+sa[i].height) + ")");
-               * }
-               * }
-               */
+              for (int i = 0; i < sa.length; i++) {
+                if ((Math.abs(center.x - (sa[i].offsetX + sa[i].width / 2))) < ((size.width / 2) + (sa[i].width / 2)) &&
+                  (Math.abs(center.y - (sa[i].offsetY + sa[i].height / 2))) < ((size.height / 2) + (sa[i].height / 2))) {
+                  if (!alarmedZones.containsKey(i)) {
+                    alarmedZones.put(i, true);
+                    activeAlarms.put(i, 1);
+                  } else {
+                    activeAlarms.remove(i);
+                    activeAlarms.put(i, 1);
+                  }
+                  System.out.println("Motion Detected in the area no: " + i +
+                    " Located at points: (" + sa[i].x + ", " + sa[i].y + ") -"
+                    + " (" + (sa[i].x + sa[i].width) + ", "
+                    + (sa[i].y + sa[i].height) + ")");
+                }
+              }
+              */
             }
           }
           contour = contour.h_next();

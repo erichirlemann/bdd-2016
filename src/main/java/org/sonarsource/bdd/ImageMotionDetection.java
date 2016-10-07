@@ -9,7 +9,7 @@ import static org.bytedeco.javacpp.opencv_core.cvGetSize;
 import static org.bytedeco.javacpp.opencv_core.cvReleaseImage;
 import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
 import static org.bytedeco.javacpp.opencv_imgcodecs.cvSaveImage;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_GAUSSIAN;
+import static org.bytedeco.javacpp.opencv_imgproc.CV_BLUR;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_THRESH_BINARY;
 import static org.bytedeco.javacpp.opencv_imgproc.cvSmooth;
 import static org.bytedeco.javacpp.opencv_imgproc.cvThreshold;
@@ -28,7 +28,10 @@ public class ImageMotionDetection {
     IplImage image1 = cvLoadImage(file1.getAbsolutePath());
     IplImage image2 = cvLoadImage(file2.getAbsolutePath());
 
-    IplImage diff = acc(image1, image2);
+    IplImage diff = diff(image1, image2);
+    // do some threshold for wipe away useless details
+    cvThreshold(diff, diff, 110, 255, CV_THRESH_BINARY);
+    cvSmooth(diff, diff, CV_BLUR, 9, 9, 2, 2);
 
     cvSaveImage("target/diff.JPG", diff);
     cvReleaseImage(diff);
@@ -36,16 +39,12 @@ public class ImageMotionDetection {
     cvReleaseImage(image2);
   }
 
-  private IplImage acc(IplImage frame, IplImage frame2) {
+  private IplImage diff(IplImage frame, IplImage frame2) {
     IplImage diff = IplImage.create(cvGetSize(frame), frame.depth(), frame.nChannels());
 
-    cvSmooth(frame, frame, CV_GAUSSIAN, 9, 9, 2, 2);
-
+    //cvSmooth(frame, frame, CV_GAUSSIAN, 9, 9, 2, 2);
     // perform ABS difference
     cvAbsDiff(frame, frame2, diff);
-    // do some threshold for wipe away useless details
-    cvThreshold(diff, diff, 64, 255, CV_THRESH_BINARY);
-
     return diff;
   }
 
