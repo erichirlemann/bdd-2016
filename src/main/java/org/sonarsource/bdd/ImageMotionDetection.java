@@ -6,6 +6,7 @@ import org.bytedeco.javacv.FrameGrabber;
 
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import static org.bytedeco.javacpp.opencv_core.cvAbsDiff;
+import static org.bytedeco.javacpp.opencv_core.cvAnd;
 import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
 import static org.bytedeco.javacpp.opencv_core.cvGetSize;
 import static org.bytedeco.javacpp.opencv_core.cvReleaseImage;
@@ -34,13 +35,18 @@ public class ImageMotionDetection {
 
     IplImage diff = diff(image1, image2);
     // do some threshold for wipe away useless details
-    cvThreshold(diff, diff, 130, 255, CV_THRESH_BINARY);
+    cvThreshold(diff, diff, 80, 255, CV_THRESH_BINARY);
     cvSmooth(diff, diff, CV_BLUR, 9, 9, 2, 2);
-    IplImage copy = cvCreateImage(cvGetSize(diff), IPL_DEPTH_8U, 1);
-    cvCvtColor(diff, copy, CV_RGB2GRAY);
+    IplImage mask = cvCreateImage(cvGetSize(diff), IPL_DEPTH_8U, 1);
+    cvCvtColor(diff, mask, CV_RGB2GRAY);
+    //IplImage newMask = copy(image1);
+    //cvCvtColor(mask, newMask, CV_GRAY2RGB);
 
-    cvSaveImage("target/diff.JPG", copy);
-    cvReleaseImage(copy);
+    IplImage copyAnd = copy(image2);
+    cvAnd(image2, image2, copyAnd, mask);
+
+    cvSaveImage("target/diff.JPG", copyAnd);
+    cvReleaseImage(copyAnd);
     cvReleaseImage(image1);
     cvReleaseImage(image2);
   }
@@ -55,7 +61,7 @@ public class ImageMotionDetection {
   }
 
   private static IplImage copy(IplImage frame) {
-    //return frame.clone();
+    // return frame.clone();
     return IplImage.create(cvGetSize(frame), frame.depth(), frame.nChannels());
   }
 }
