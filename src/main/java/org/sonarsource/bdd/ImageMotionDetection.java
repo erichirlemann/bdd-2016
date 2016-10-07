@@ -4,7 +4,6 @@ import java.io.File;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
-import org.bytedeco.javacv.FrameGrabber;
 
 import static org.bytedeco.javacpp.helper.opencv_imgproc.cvFindContours;
 import static org.bytedeco.javacpp.opencv_core.*;
@@ -28,7 +27,7 @@ public class ImageMotionDetection {
   static opencv_core.CvScalar min = cvScalar(0x0A, 0x64, 0x93, 0);// BGR-A
   static opencv_core.CvScalar max = cvScalar(0x30, 0xB8, 0xe3, 0);// BGR-A
 
-  public void execute() throws FrameGrabber.Exception {
+  public void execute() {
     File filePath = new File(getClass().getClassLoader().getResource("samples").getFile());
     File file1 = new File(filePath, "DSC_0218-min.JPG");
     File file2 = new File(filePath, "DSC_0219-min.JPG");

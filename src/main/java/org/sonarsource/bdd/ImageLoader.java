@@ -11,9 +11,9 @@ import org.apache.commons.io.FileUtils;
 import org.bytedeco.javacpp.opencv_core.CvRect;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
-import static org.bytedeco.javacpp.opencv_core.cvReleaseImage;
-import static org.bytedeco.javacpp.opencv_core.cvSetImageROI;
+import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
+import static org.bytedeco.javacpp.opencv_imgcodecs.cvSaveImage;
 
 public class ImageLoader {
 
@@ -34,27 +34,34 @@ public class ImageLoader {
 
   public void load(File inputDir) throws IOException {
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(inputDir.toPath(), "*.JPG")) {
-      List<File> files = new ArrayList<>();
+      ArrayList<File> files = new ArrayList<>();
       for (Path entry : stream) {
         files.add(entry.toFile());
         if (files.size() == FILES_GROUP) {
-          // TODO get reference from images average
-          processFiles(files.get(0), files);
+
+          System.out.println("Compute reference image on " + files.size());
+          IplImage reference = ImageAverage.averageDichotomy(files);
+          System.out.println("width : " + reference.width() + " height : " + reference.height());
+          cvSaveImage("target/reference.JPG", reference);
+
+          processFiles(reference, files);
           files.clear();
         }
       }
       if (!files.isEmpty()) {
-        processFiles(files.get(0), files);
+        IplImage reference = ImageAverage.averageDichotomy(files);
+        cvSaveImage("target/reference.JPG", reference);
+        processFiles(reference, files);
       }
     }
   }
 
-  private void processFiles(File fileRef, List<File> files) {
-    IplImage ref = cvLoadImage(fileRef.getAbsolutePath());
-    crop(ref);
-    save(ref, fileRef.getName() + "-ref-cropped.jpg");
+  private void processFiles(IplImage reference, List<File> files) {
+    IplImage copy = cvCreateImage(cvGetSize(reference), reference.depth(), reference.nChannels());
+    cvCopy(reference, copy);
+    crop(reference);
     for (File file : files) {
-      int nb = processImage(ref, file);
+      int nb = processImage(reference, file);
       System.out.println(file.getName() + " : " + nb);
     }
   }
