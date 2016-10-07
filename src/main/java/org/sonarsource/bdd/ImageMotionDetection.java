@@ -49,15 +49,19 @@ public class ImageMotionDetection {
 
     IplImage diff = diff(image1, image2);
     // do some threshold for wipe away useless details
-    cvThreshold(diff, diff, 80, 255, CV_THRESH_BINARY);
+    cvThreshold(diff, diff, 100, 255, CV_THRESH_BINARY);
     cvSmooth(diff, diff, CV_BLUR, 9, 9, 2, 2);
+    save(diff, "diff");
+
     IplImage mask = cvCreateImage(cvGetSize(diff), IPL_DEPTH_8U, 1);
     cvCvtColor(diff, mask, CV_RGB2GRAY);
     // IplImage newMask = copy(image1);
     // cvCvtColor(mask, newMask, CV_GRAY2RGB);
+    save(mask, "mask");
 
     IplImage copyAnd = copy(image2);
     cvAnd(image2, image2, copyAnd, mask);
+    save(copyAnd, "and");
 
     IplImage result = cvCreateImage(cvGetSize(image1), IPL_DEPTH_8U, 1);
     cvInRangeS(copyAnd, min, max, result);
@@ -81,13 +85,13 @@ public class ImageMotionDetection {
 
   private void contours(IplImage image) {
     IplImage contourImage = image.clone();
-    cvSmooth(contourImage, contourImage, CV_BLUR, 9, 9, 2, 2);
+    cvSmooth(contourImage, contourImage, CV_BLUR, 30, 9, 2, 2);
 
     opencv_core.CvMemStorage storage = opencv_core.CvMemStorage.create();
     opencv_core.CvSeq contour = new opencv_core.CvSeq(null);
     cvFindContours(contourImage, storage, contour, Loader.sizeof(opencv_core.CvContour.class), CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
-    System.out.println("Contours : " + contour.total());
 
+    int nbCont = 0;
     while (contour != null && !contour.isNull()) {
       if (contour.elem_size() > 0) {
         opencv_core.CvBox2D box = cvMinAreaRect2(contour, storage);
@@ -96,10 +100,14 @@ public class ImageMotionDetection {
           opencv_core.CvPoint2D32f center = box.center();
           opencv_core.CvSize2D32f size = box.size();
           System.out.println("sizes : " + size);
+          if (size.width() * size.height() > 1000) {
+            nbCont++;
+          }
         }
       }
       contour = contour.h_next();
     }
+    System.out.println("Contours : " + nbCont);
     save(contourImage, "contour");
   }
 
