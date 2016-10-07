@@ -1,6 +1,7 @@
 package org.sonarsource.bdd;
 
 import java.io.File;
+import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.FrameGrabber;
 
@@ -9,7 +10,9 @@ import static org.bytedeco.javacpp.opencv_core.cvAbsDiff;
 import static org.bytedeco.javacpp.opencv_core.cvAnd;
 import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
 import static org.bytedeco.javacpp.opencv_core.cvGetSize;
+import static org.bytedeco.javacpp.opencv_core.cvInRangeS;
 import static org.bytedeco.javacpp.opencv_core.cvReleaseImage;
+import static org.bytedeco.javacpp.opencv_core.cvScalar;
 import static org.bytedeco.javacpp.opencv_imgcodecs.cvLoadImage;
 import static org.bytedeco.javacpp.opencv_imgcodecs.cvSaveImage;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_BLUR;
@@ -20,6 +23,12 @@ import static org.bytedeco.javacpp.opencv_imgproc.cvSmooth;
 import static org.bytedeco.javacpp.opencv_imgproc.cvThreshold;
 
 public class ImageMotionDetection {
+
+  //static opencv_core.CvScalar min = cvScalar(181, 137, 28, 0);// BGR-A
+  //static opencv_core.CvScalar max = cvScalar(228, 175, 59, 0);// BGR-A
+
+  static opencv_core.CvScalar min = cvScalar(50, 50, 0, 0);// BGR-A
+  static opencv_core.CvScalar max = cvScalar(255, 255, 255, 0);// BGR-A
 
   public void execute() throws FrameGrabber.Exception {
     File filePath = new File(getClass().getClassLoader().getResource("samples").getFile());
@@ -39,13 +48,16 @@ public class ImageMotionDetection {
     cvSmooth(diff, diff, CV_BLUR, 9, 9, 2, 2);
     IplImage mask = cvCreateImage(cvGetSize(diff), IPL_DEPTH_8U, 1);
     cvCvtColor(diff, mask, CV_RGB2GRAY);
-    //IplImage newMask = copy(image1);
-    //cvCvtColor(mask, newMask, CV_GRAY2RGB);
+    // IplImage newMask = copy(image1);
+    // cvCvtColor(mask, newMask, CV_GRAY2RGB);
 
     IplImage copyAnd = copy(image2);
     cvAnd(image2, image2, copyAnd, mask);
 
-    cvSaveImage("target/diff.JPG", copyAnd);
+    IplImage result = cvCreateImage(cvGetSize(image1), IPL_DEPTH_8U, 1);
+    cvInRangeS(copyAnd, min, max, result);
+
+    cvSaveImage("target/diff.JPG", result);
     cvReleaseImage(copyAnd);
     cvReleaseImage(image1);
     cvReleaseImage(image2);
