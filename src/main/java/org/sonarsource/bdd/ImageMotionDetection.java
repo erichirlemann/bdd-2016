@@ -24,11 +24,11 @@ import static org.bytedeco.javacpp.opencv_imgproc.cvThreshold;
 
 public class ImageMotionDetection {
 
-  //static opencv_core.CvScalar min = cvScalar(181, 137, 28, 0);// BGR-A
-  //static opencv_core.CvScalar max = cvScalar(228, 175, 59, 0);// BGR-A
+  //static opencv_core.CvScalar min = cvScalar(, 137, 28, 0);// BGR-A
+  //static opencv_core.CvScalar max = cvScalar(, , 59, 0);// BGR-A
 
-  static opencv_core.CvScalar min = cvScalar(50, 50, 0, 0);// BGR-A
-  static opencv_core.CvScalar max = cvScalar(255, 255, 255, 0);// BGR-A
+  static opencv_core.CvScalar min = cvScalar(0x1c, 0x89, 0xb5, 0);// BGR-A
+  static opencv_core.CvScalar max = cvScalar(0x3b, 0xaf, 0xe4, 0);// BGR-A
 
   public void execute() throws FrameGrabber.Exception {
     File filePath = new File(getClass().getClassLoader().getResource("samples").getFile());
@@ -57,6 +57,7 @@ public class ImageMotionDetection {
     IplImage result = cvCreateImage(cvGetSize(image1), IPL_DEPTH_8U, 1);
     cvInRangeS(copyAnd, min, max, result);
 
+    cvSaveImage("target/inter.JPG", copyAnd);
     cvSaveImage("target/diff.JPG", result);
     cvReleaseImage(copyAnd);
     cvReleaseImage(image1);
