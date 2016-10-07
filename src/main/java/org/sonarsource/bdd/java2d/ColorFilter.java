@@ -2,8 +2,8 @@ package org.sonarsource.bdd.java2d;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
-import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import javax.imageio.ImageIO;
 
 public class ColorFilter {
@@ -16,30 +16,38 @@ public class ColorFilter {
   private int[] min = {255, 255, 255};
   private int[] max = {0, 0, 0};
 
-  public ColorFilter(File[] colorSampleFiles, float minLight) throws IOException {
-    this.minLight = minLight * 3;
-    long[] avgColor = {0, 0, 0, 0};
-    for (File sampleFile : colorSampleFiles) {
-      addColor(sampleFile, avgColor);
-    }
-    if (sampleCount > 0) {
-      long max = Math.max(1, Math.max(avgColor[0], Math.max(avgColor[1], avgColor[2]))) / sampleCount;
-      double scale = 255.0 / max;
-      for (int c = 0; c < 3; c++) {
-        referenceColor[c] = (float) (avgColor[c] / sampleCount * scale);
+  public static final ColorFilter getPollenInstance() {
+    return Holder.POLLEN;
+  }
+
+  private static class Holder {
+    private static final ColorFilter POLLEN = new ColorFilter(ColorFilter.class.getResource("/pollen.png"), 40);
+  }
+
+  public ColorFilter(URL referenceImage, float minLight) {
+    try {
+      this.minLight = minLight * 3;
+      long[] avgColor = {0, 0, 0, 0};
+      addColor(referenceImage, avgColor);
+      if (sampleCount > 0) {
+        long max = Math.max(1, Math.max(avgColor[0], Math.max(avgColor[1], avgColor[2]))) / sampleCount;
+        double scale = 255.0 / max;
+        for (int c = 0; c < 3; c++) {
+          referenceColor[c] = (float) (avgColor[c] / sampleCount * scale);
+        }
       }
-    }
-    referenceLight = 0;
-    for (int c = 0; c < 3; c++) {
-      referenceLight += referenceColor[c];
-    }
-    for (File sampleFile : colorSampleFiles) {
-      increaseThreshold(sampleFile);
+      referenceLight = 0;
+      for (int c = 0; c < 3; c++) {
+        referenceLight += referenceColor[c];
+      }
+      increaseThreshold(referenceImage);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  private void addColor(File sampleFile, long[] avgColor) throws IOException {
-    BufferedImage image = ImageIO.read(sampleFile);
+  private void addColor(URL referenceImage, long[] avgColor) throws IOException {
+    BufferedImage image = ImageIO.read(referenceImage);
     Raster inRaster = image.getRaster();
     int width = image.getWidth();
     int height = image.getHeight();
@@ -59,8 +67,8 @@ public class ColorFilter {
     }
   }
 
-  private void increaseThreshold(File sampleFile) throws IOException {
-    BufferedImage image = ImageIO.read(sampleFile);
+  private void increaseThreshold(URL referenceImage) throws IOException {
+    BufferedImage image = ImageIO.read(referenceImage);
     Raster inRaster = image.getRaster();
     int width = image.getWidth();
     int height = image.getHeight();
