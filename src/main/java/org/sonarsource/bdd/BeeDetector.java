@@ -1,5 +1,6 @@
 package org.sonarsource.bdd;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
@@ -7,6 +8,11 @@ import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_core.CvScalar;
 import org.bytedeco.javacpp.opencv_core.IplImage;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameConverter;
+import org.sonarsource.bdd.java2d.ColorFilter;
+import org.sonarsource.bdd.java2d.ImageFilter;
 
 import static org.bytedeco.javacpp.helper.opencv_imgproc.cvFindContours;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
@@ -30,10 +36,15 @@ import static org.bytedeco.javacpp.opencv_imgproc.cvThreshold;
 
 public class BeeDetector {
 
-  private File outputFolder = new File("target/" + getClass().getSimpleName());
-
   private static final CvScalar min = cvScalar(0x09, 0x63, 0x90, 0);// BGR-A
   private static final CvScalar max = cvScalar(0x2c, 0xB3, 0xe4, 0);// BGR-A
+
+  private File outputFolder = new File("target/" + getClass().getSimpleName());
+
+  private static final OpenCVFrameConverter.ToIplImage grabberConverter = new OpenCVFrameConverter.ToIplImage();
+  private static final Java2DFrameConverter paintConverter = new Java2DFrameConverter();
+
+  private final ImageFilter imageFilter = new ImageFilter(ColorFilter.getPollenInstance());
 
   public BeeDetector() {
     try {
@@ -49,18 +60,22 @@ public class BeeDetector {
     // do some threshold for wipe away useless details
     cvThreshold(diff, diff, 100, 255, CV_THRESH_BINARY);
     cvSmooth(diff, diff, CV_BLUR, 9, 9, 2, 2);
-    //save(diff, fileName + "-diff");
+    // save(diff, fileName + "-diff");
 
     IplImage mask = cvCreateImage(cvGetSize(diff), IPL_DEPTH_8U, 1);
     cvCvtColor(diff, mask, CV_RGB2GRAY);
-    //save(mask, fileName + "-mask");
+    // save(mask, fileName + "-mask");
 
     IplImage copyAnd = copyEmpty(image);
     cvAnd(image, image, copyAnd, mask);
-    //save(copyAnd, fileName + "-and");
+    // save(copyAnd, fileName + "-and");
+
+    BufferedImage bufferedImage = toBufferedImage(copyAnd);
+    //IplImage filteredImage = toIplImage(imageFilter.apply(bufferedImage).image);
+    IplImage filteredImage = toIplImage(bufferedImage);
 
     IplImage result = cvCreateImage(cvGetSize(ref), IPL_DEPTH_8U, 1);
-    cvInRangeS(copyAnd, min, max, result);
+    cvInRangeS(filteredImage, min, max, result);
 
     int nbCount = contours(result, fileName);
 
@@ -68,6 +83,7 @@ public class BeeDetector {
     cvReleaseImage(mask);
     cvReleaseImage(copyAnd);
     cvReleaseImage(result);
+    cvReleaseImage(filteredImage);
 
     return nbCount;
   }
@@ -115,4 +131,14 @@ public class BeeDetector {
     return IplImage.create(cvGetSize(frame), frame.depth(), frame.nChannels());
   }
 
+  private static BufferedImage toBufferedImage(IplImage src) {
+    // IplImage copy = cvCreateImage(cvGetSize(src), src.depth(), src.nChannels());
+    // cvCopy(src, copy);
+    return paintConverter.getBufferedImage(grabberConverter.convert(src), 1);
+  }
+
+  private static IplImage toIplImage(BufferedImage bufImage) {
+    Frame convert = paintConverter.convert(bufImage);
+    return new OpenCVFrameConverter.ToIplImage().convert(convert);
+  }
 }

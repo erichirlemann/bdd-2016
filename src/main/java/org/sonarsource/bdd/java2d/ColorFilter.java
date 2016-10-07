@@ -10,7 +10,7 @@ public class ColorFilter {
 
   private float[] referenceColor = {0, 0, 0, 0};
   private float referenceLight;
-  private final float minLight;
+  private float minLight;
   private long sampleCount = 0;
   private float threshold = 0.0f;
   private int[] min = {255, 255, 255};
@@ -21,12 +21,12 @@ public class ColorFilter {
   }
 
   private static class Holder {
-    private static final ColorFilter POLLEN = new ColorFilter(ColorFilter.class.getResource("/pollen.png"), 40);
+    private static final ColorFilter POLLEN = new ColorFilter(ColorFilter.class.getResource("/pollen.png"), 80);
   }
 
   public ColorFilter(URL referenceImage, float minLight) {
     try {
-      this.minLight = minLight * 3;
+      this.minLight = 0;
       long[] avgColor = {0, 0, 0, 0};
       addColor(referenceImage, avgColor);
       if (sampleCount > 0) {
@@ -41,6 +41,7 @@ public class ColorFilter {
         referenceLight += referenceColor[c];
       }
       increaseThreshold(referenceImage);
+      this.minLight = minLight * 3;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
