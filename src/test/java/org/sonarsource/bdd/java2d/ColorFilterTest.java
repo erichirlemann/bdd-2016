@@ -19,6 +19,11 @@ public class ColorFilterTest {
     Assert.assertEquals("R", 255.0, colorFilter.getR(), 0.1);
     Assert.assertEquals("G", 189.14835, colorFilter.getG(), 0.1);
     Assert.assertEquals("B", 35.027473, colorFilter.getB(), 0.1);
+
+    int[] min = colorFilter.getMin();
+    int[] max = colorFilter.getMax();
+    System.out.println("Min : " + min[0] + ", " + min[1] + ", " + min[2]);
+    System.out.println("Max : " + max[0] + ", " + max[1] + ", " + max[2]);
   }
 
 }

@@ -13,6 +13,8 @@ public class ColorFilter {
   private final float minLight;
   private long sampleCount = 0;
   private float threshold = 0.0f;
+  private int[] min = {255, 255, 255};
+  private int[] max = {0, 0, 0};
 
   public ColorFilter(File[] colorSampleFiles, float minLight) throws IOException {
     this.minLight = minLight * 3;
@@ -46,9 +48,11 @@ public class ColorFilter {
       for (int j = 0; j < height; j++) {
         color = inRaster.getPixel(i, j, color);
         if (color[3] != 0) {
-          avgColor[0] += color[0];
-          avgColor[1] += color[1];
-          avgColor[2] += color[2];
+          for (int c = 0; c < 3; c++) {
+            avgColor[c] += color[c];
+            min[c] = Math.min(min[c], color[c]);
+            max[c] = Math.max(max[c], color[c]);
+          }
           sampleCount++;
         }
       }
@@ -109,5 +113,13 @@ public class ColorFilter {
 
   public float getThreshold() {
     return threshold;
+  }
+
+  public int[] getMin() {
+    return min;
+  }
+
+  public int[] getMax() {
+    return max;
   }
 }
