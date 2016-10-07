@@ -14,9 +14,6 @@ public class ImageSamples {
   public static final File IMG_FILE2 = new File(DIR + "DSC_0219-min.JPG");
   public static final File IMG_FILE3 = new File(DIR + "DSC_0220-min.JPG");
 
-  public static final File POLLEN_FILE1 = new File(DIR + "pollen1.png");
-  public static final File POLLEN_FILE2 = new File(DIR + "pollen2.png");
-
   public static final File[] IMG_FILES = {IMG_FILE1, IMG_FILE2, IMG_FILE3};
 
   public static File resultFile(Object testObject, String fileName) throws IOException {
